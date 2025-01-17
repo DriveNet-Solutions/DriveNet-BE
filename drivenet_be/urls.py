@@ -16,7 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from .views import LoginView
+from django.http import HttpResponse
 
+def home_view(request):
+    return HttpResponse("Bienvenido al backend de la aplicación.")
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/login/', LoginView.as_view(), name='login'),
+    path('', home_view, name='home'),
 ]
