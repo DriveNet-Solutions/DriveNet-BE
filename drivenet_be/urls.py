@@ -18,6 +18,9 @@ from django.contrib import admin
 from django.urls import path
 from .views import LoginView, LogoutView, showEmployeeView , addEmployeeView, editEmployeeView, removeEmployeeView
 from django.http import HttpResponse
+from .views import UserSearchView
+
+
 
 def home_view(request):
     return HttpResponse("Bienvenido al backend de la aplicación.")
@@ -30,4 +33,8 @@ urlpatterns = [
     path('api/editEmployee/<int:user_id>/', editEmployeeView.as_view(), name='editEmployee'),
     path('api/removeEmployee/<int:user_id>/', removeEmployeeView.as_view(), name='removeEmployee'),
     path('', home_view, name='home'),
+    path('api/user-search/', UserSearchView.as_view(), name='user-search'),  # Búsqueda de usuarios
 ]
+
+
+
