@@ -1,24 +1,41 @@
+from django.contrib.auth.hashers import make_password
+from django.db import IntegrityError
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import authenticate
+<<<<<<< Updated upstream
 from django.contrib.auth import login, logout
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User, Group
+=======
+from django.contrib.auth import login
+from rest_framework import status
+from .models import User
+from .serializer import UserSerializer
+import logging
+ 
+logger = logging.getLogger(__name__)
+>>>>>>> Stashed changes
 
 class LoginView(APIView):
     def post(self, request):
         print(request.data)
         username = request.data.get('username')
         password = request.data.get('password')
-        user= authenticate(username=username, password=password)
+        user = authenticate(username=username, password=password)
         if user is not None:
-            login(request,user)
+            login(request, user)
             if user.groups.filter(name='Admin').exists():
+<<<<<<< Updated upstream
                 return Response({'message' : 'Inicio de sesión exitoso de admin', 'redirectUrl' : '/admin'}, status=200)
+=======
+                return Response({'message': 'Inicio de sesión exitoso de admin', 'redirectUrl':'/user-search'}, status=200)
+>>>>>>> Stashed changes
             else:
-                return Response({'message' : 'NO es admin'}, status=400)
+                return Response({'message': 'NO es admin'}, status=400)
         else:
+<<<<<<< Updated upstream
             return Response({'message' : 'Inicio de sesión inválido'}, status=400)
 
 class LogoutView(APIView):
@@ -96,3 +113,84 @@ class removeEmployeeView(APIView):
 
 
 
+=======
+            return Response({'message': 'Inicio de sesión inválido'}, status=400)
+
+class UserSearchView(APIView):
+    def get(self, request):
+        cedula = request.query_params.get('id')
+        logger.debug(f"Searching for user with ID: {cedula}")
+        if not cedula:
+            logger.warning("No ID provided for search.")
+            return Response({"error": "A valid ID must be provided"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(id=cedula)
+            serializer = UserSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            logger.error(f"User with ID {cedula} not found.")
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Internal error: {str(e)}")
+            return Response({"error": f"Internal error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def post(self, request):
+        logger.debug("Attempting to add a new user.")
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+                logger.info("User added successfully.")
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            except IntegrityError as e:
+                logger.error(f"Integrity error: {str(e)}")
+                return Response({"error": "ID or Email must be unique."}, status=status.HTTP_400_BAD_REQUEST)
+            except Exception as e:
+                logger.error(f"Error saving user: {str(e)}")
+                return Response({"error": f"Internal error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        logger.error(f"Invalid data: {serializer.errors}")
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request):
+        cedula = request.data.get('id')
+        logger.debug(f"Attempting to edit user with ID: {cedula}")
+        if not cedula:
+            logger.warning("No ID provided for edit.")
+            return Response({"error": "A valid ID must be provided to edit"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(id=cedula)
+            serializer = UserSerializer(user, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                logger.info("User updated successfully.")
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            logger.error(f"Invalid data: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            logger.error(f"User with ID {cedula} not found.")
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Internal error: {str(e)}")
+            return Response({"error": f"Internal error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def delete(self, request):
+        cedula = request.query_params.get('id')
+        logger.debug(f"Attempting to delete user with ID: {cedula}")
+        if not cedula:
+            logger.warning("No ID provided for deletion.")
+            return Response({"error": "A valid ID must be provided to delete"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = User.objects.get(id=cedula)
+            user.delete()
+            logger.info(f"User with ID {cedula} deleted successfully.")
+            return Response({"message": "User deleted successfully"}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            logger.error(f"User with ID {cedula} not found.")
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            logger.error(f"Internal error: {str(e)}")
+            return Response({"error": f"Internal error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+>>>>>>> Stashed changes
