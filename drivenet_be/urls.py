@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .views import LoginView
+from .views import LoginView, LogoutView, showEmployeeView , addEmployeeView, editEmployeeView, removeEmployeeView
 from django.http import HttpResponse
 
 def home_view(request):
@@ -24,5 +24,10 @@ def home_view(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/login/', LoginView.as_view(), name='login'),
+    path('api/logout/', LogoutView.as_view(), name='logout'),
+    path('api/showEmployee/', showEmployeeView.as_view(),name ='showEmployee'),
+    path('api/addEmployee/', addEmployeeView.as_view(), name='addEmployee'),
+    path('api/editEmployee/<int:user_id>/', editEmployeeView.as_view(), name='editEmployee'),
+    path('api/removeEmployee/<int:user_id>/', removeEmployeeView.as_view(), name='removeEmployee'),
     path('', home_view, name='home'),
 ]
