@@ -4,11 +4,6 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import authenticate
-<<<<<<< Updated upstream
-from django.contrib.auth import login, logout
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth.models import User, Group
-=======
 from django.contrib.auth import login
 from rest_framework import status
 from .models import User
@@ -16,7 +11,6 @@ from .serializer import UserSerializer
 import logging
  
 logger = logging.getLogger(__name__)
->>>>>>> Stashed changes
 
 class LoginView(APIView):
     def post(self, request):
@@ -27,15 +21,11 @@ class LoginView(APIView):
         if user is not None:
             login(request, user)
             if user.groups.filter(name='Admin').exists():
-<<<<<<< Updated upstream
                 return Response({'message' : 'Inicio de sesión exitoso de admin', 'redirectUrl' : '/admin'}, status=200)
-=======
                 return Response({'message': 'Inicio de sesión exitoso de admin', 'redirectUrl':'/user-search'}, status=200)
->>>>>>> Stashed changes
             else:
                 return Response({'message': 'NO es admin'}, status=400)
         else:
-<<<<<<< Updated upstream
             return Response({'message' : 'Inicio de sesión inválido'}, status=400)
 
 class LogoutView(APIView):
@@ -109,11 +99,6 @@ class removeEmployeeView(APIView):
             return Response({'error': 'Empleado no encontrado'}, status=400)
         except Exception as e:
             return Response({'error': str(e)}, status=400)
-
-
-
-
-=======
             return Response({'message': 'Inicio de sesión inválido'}, status=400)
 
 class UserSearchView(APIView):
@@ -193,4 +178,3 @@ class UserSearchView(APIView):
         except Exception as e:
             logger.error(f"Internal error: {str(e)}")
             return Response({"error": f"Internal error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
->>>>>>> Stashed changes
