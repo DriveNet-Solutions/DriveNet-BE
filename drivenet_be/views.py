@@ -8,6 +8,7 @@ from django.contrib.auth import login
 from rest_framework import status
 from .models import User
 from .serializer import UserSerializer
+from rest_framework.permissions import IsAuthenticated
 import logging
  
 logger = logging.getLogger(__name__)
