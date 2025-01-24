@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class User(models.Model):
+class Client(models.Model):
     id_u = models.AutoField(primary_key=True, verbose_name="ID Usuario")
     id = models.IntegerField(unique=True, verbose_name="Identificación (Cédula)")
     name = models.CharField(max_length=100, verbose_name="Nombre completo")

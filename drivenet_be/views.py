@@ -4,11 +4,12 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import authenticate
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from rest_framework import status
-from .models import User
+from .models import Client
 from .serializer import UserSerializer
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.models import User,Group
 import logging
  
 logger = logging.getLogger(__name__)
@@ -18,14 +19,13 @@ class LoginView(APIView):
         print(request.data)
         username = request.data.get('username')
         password = request.data.get('password')
-        user = authenticate(username=username, password=password)
+        user= authenticate(username=username, password=password)
         if user is not None:
-            login(request, user)
+            login(request,user)
             if user.groups.filter(name='Admin').exists():
-                return Response({'message' : 'Inicio de sesión exitoso de admin', 'redirectUrl' : '/admin'}, status=200)
-                return Response({'message': 'Inicio de sesión exitoso de admin', 'redirectUrl':'/user-search'}, status=200)
-            else:
-                return Response({'message': 'NO es admin'}, status=400)
+                return Response({'message' : 'Inicio de sesión exitoso de admin', 'redirectUrl' : '/admin', 'role' : 'Admin'}, status=200)
+            elif user.groups.filter(name='Servicio al cliente').exists():
+                return Response({'message' : 'Inicio de sesión exitoso de servicio al cliente', 'redirectUrl' : '/user-search',  'role' : 'Servicio al cliente'}, status=200)
         else:
             return Response({'message' : 'Inicio de sesión inválido'}, status=400)
 
@@ -35,7 +35,6 @@ class LogoutView(APIView):
         return Response ({'message' : 'Sesión cerrada correctamente'}, status=200)
 
 class showEmployeeView(APIView):
-    permission_classes = [IsAuthenticated]
     def get(self, request):
         users = User.objects.all()
         data = [
@@ -99,8 +98,7 @@ class removeEmployeeView(APIView):
         except User.DoesNotExist:
             return Response({'error': 'Empleado no encontrado'}, status=400)
         except Exception as e:
-            return Response({'error': str(e)}, status=400)
-            return Response({'message': 'Inicio de sesión inválido'}, status=400)
+            return Response({'error': str(e)},status=400)
 
 class UserSearchView(APIView):
     def get(self, request):
@@ -111,10 +109,10 @@ class UserSearchView(APIView):
             return Response({"error": "A valid ID must be provided"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            user = User.objects.get(id=cedula)
-            serializer = UserSerializer(user)
+            client = Client.objects.get(id=cedula)
+            serializer = UserSerializer(client)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        except User.DoesNotExist:
+        except Client.DoesNotExist:
             logger.error(f"User with ID {cedula} not found.")
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -146,8 +144,8 @@ class UserSearchView(APIView):
             return Response({"error": "A valid ID must be provided to edit"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            user = User.objects.get(id=cedula)
-            serializer = UserSerializer(user, data=request.data, partial=True)
+            client = Client.objects.get(id=cedula)
+            serializer = UserSerializer(client, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
                 logger.info("User updated successfully.")
@@ -169,8 +167,8 @@ class UserSearchView(APIView):
             return Response({"error": "A valid ID must be provided to delete"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            user = User.objects.get(id=cedula)
-            user.delete()
+            client = Client.objects.get(id=cedula)
+            client.delete()
             logger.info(f"User with ID {cedula} deleted successfully.")
             return Response({"message": "User deleted successfully"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
