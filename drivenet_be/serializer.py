@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from .models import User
+from .models import Client
 from django.contrib.auth.hashers import make_password
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = Client
         fields = [
             'id_u', 
             'id', 
